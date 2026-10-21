@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>客服管理后台</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- 登录 -->
+    <div id="loginView" class="login-view">
+      <div class="login-card">
+        <div class="login-logo">🛠️ 客服管理后台</div>
+        <div class="login-sub">演示版 · 请输入管理口令</div>
+        <input id="loginPass" type="password" placeholder="管理口令（默认 admin888）" />
+        <button id="loginBtn" class="btn-primary">登录</button>
+        <div id="loginErr" class="login-err"></div>
+        <div class="login-hint">生产环境请改用云端账号认证（见 README）。</div>
+      </div>
+    </div>
+
+    <!-- 主界面 -->
+    <div id="appView" class="admin-app">
+      <header class="admin-header">
+        <div class="brand">
+          <span class="logo">🛠️</span>
+          <span class="brand-name">客服管理后台</span>
+        </div>
+        <button id="logoutBtn" class="btn-ghost">退出登录</button>
+      </header>
+
+      <section class="stats">
+        <div class="stat-card">
+          <div class="stat-num" id="statTotal">0</div>
+          <div class="stat-label">对话总数</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statSat">—</div>
+          <div class="stat-label">平均满意度</div>
+          <div class="stat-sub" id="satSub"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statTransferred">0</div>
+          <div class="stat-label">转人工数</div>
+        </div>
+        <div class="stat-card intent-card">
+          <div class="stat-label">意图分布</div>
+          <div id="intentBars" class="intent-bars"></div>
+        </div>
+      </section>
+
+      <section class="filters">
+        <select id="filterIntent">
+          <option value="">全部意图</option>
+          <option value="refund">退款</option>
+          <option value="order">查询订单</option>
+          <option value="tech">技术支持</option>
+          <option value="other">其他</option>
+        </select>
+        <select id="filterStatus">
+          <option value="">全部状态</option>
+          <option value="ai">AI 处理中</option>
+          <option value="transferred">已转人工</option>
+          <option value="resolved">已解决</option>
+        </select>
+        <input id="dateFrom" type="date" title="起始日期" />
+        <span class="filter-sep">至</span>
+        <input id="dateTo" type="date" title="结束日期" />
+        <input id="search" type="text" placeholder="搜索对话内容…" />
+        <button id="exportBtn" class="btn-primary">导出 CSV</button>
+      </section>
+
+      <section class="table-wrap">
+        <table class="conv-table">
+          <thead>
+            <tr>
+              <th>时间</th>
+              <th>意图</th>
+              <th>状态</th>
+              <th>消息数</th>
+              <th>满意度</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="convList"></tbody>
+        </table>
+      </section>
+
+      <!-- 知识库管理 -->
+      <section class="faq-section">
+        <div class="faq-head">
+          <h3>知识库管理（FAQ）</h3>
+          <button id="faqAdd" class="btn-primary">+ 新增条目</button>
+        </div>
+        <div id="faqForm" class="faq-form" style="display: none">
+          <input id="faqId" type="hidden" />
+          <div class="faq-row">
+            <label>分类</label>
+            <select id="faqCategory">
+              <option value="refund">退款</option>
+              <option value="order">查询订单</option>
+              <option value="tech">技术支持</option>
+              <option value="other">其他</option>
+            </select>
+          </div>
+          <div class="faq-row">
+            <label>问题</label>
+            <input id="faqQuestion" type="text" placeholder="常见问题（如：如何申请退款？）" />
+          </div>
+          <div class="faq-row">
+            <label>回答</label>
+            <textarea id="faqAnswer" rows="3" placeholder="标准答案"></textarea>
+          </div>
+          <div class="faq-row">
+            <label>关键词</label>
+            <input id="faqKeywords" type="text" placeholder="以 、或逗号分隔，如：退款、退货、退钱" />
+          </div>
+          <div class="faq-row faq-actions">
+            <button id="faqSave" class="btn-primary">保存</button>
+            <button id="faqCancel" class="btn-ghost">取消</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="conv-table">
+            <thead>
+              <tr>
+                <th>分类</th>
+                <th>问题</th>
+                <th>回答</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="faqList"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- 详情弹窗 -->
+    <div id="modal" class="modal">
+      <div class="modal-card">
+        <div class="modal-head">
+          <span id="detailTitle">对话详情</span>
+          <button id="modalClose" class="btn-ghost">关闭</button>
+        </div>
+        <div id="detailBody" class="modal-body"></div>
+        <div class="modal-foot">
+          <textarea id="agentReply" rows="2" placeholder="以人工客服身份回复顾客…"></textarea>
+          <button id="agentSend" class="btn-primary">发送人工回复</button>
+          <button id="resolveBtn" class="btn-ghost">标记为已解决</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/faq-data.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/engine.js"></script>
+    <script src="js/cloud.js"></script>
+    <script src="js/admin.js"></script>
+  </body>
+</html>
